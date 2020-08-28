@@ -1,0 +1,31 @@
+{
+  "name": "playcanvas-waterfall-display",
+  "version": "1.0.0",
+  "description": "A spectrogram waterfall rendered as a 3D mesh using Play Canvas and the Web Audio API.",
+  "main": "dist/game.js",
+  "scripts": {
+    "start": "npm run watch",
+    "watch": "npm run build -- -w",
+    "build": "npx rollup --config rollup.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lloydevans/playcanvas-waterfall-display.git"
+  },
+  "author": "Lloyd Evans",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^5.0.2",
+    "rollup": "^2.22.1",
+    "rollup-plugin-string": "^3.0.0",
+    "typescript": "^4.0.2"
+  },
+  "dependencies": {
+    "playcanvas": "^1.34.0",
+    "tslib": "^2.0.1"
+  },
+  "bugs": {
+    "url": "https://github.com/lloydevans/playcanvas-waterfall-display/issues"
+  },
+  "homepage": "https://github.com/lloydevans/playcanvas-waterfall-display#readme"
+}
