@@ -43,15 +43,15 @@
 
     var NOISE_FLOOR = 148;
     var color = new pc.Color();
-    var SpectrumWaterfall = (function (_super) {
-        __extends(SpectrumWaterfall, _super);
-        function SpectrumWaterfall() {
+    var WaterfallDisplay = (function (_super) {
+        __extends(WaterfallDisplay, _super);
+        function WaterfallDisplay() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.material = new pc.StandardMaterial();
             _this.graphNode = new pc.GraphNode();
             return _this;
         }
-        SpectrumWaterfall.prototype.initialize = function () {
+        WaterfallDisplay.prototype.initialize = function () {
             var _this = this;
             this.on("attr:fftSize", function () {
                 _this.analyzerNode.fftSize = _this.fftSize;
@@ -81,7 +81,7 @@
             }
             this.reset();
         };
-        SpectrumWaterfall.prototype.update = function (dt) {
+        WaterfallDisplay.prototype.update = function (dt) {
             if (this.cycleColors) {
                 rotateHue(this.colorMax, -50 * dt);
                 rotateHue(this.colorMin, -50 * dt);
@@ -92,7 +92,7 @@
                 this.updateMesh();
             }
         };
-        SpectrumWaterfall.prototype.play = function (slotName) {
+        WaterfallDisplay.prototype.play = function (slotName) {
             if (!this.active) {
                 this.active = true;
             }
@@ -100,10 +100,10 @@
             this.playbackInstance = this.entity.sound.play(slotName);
             this.playbackInstance._connectorNode.connect(this.analyzerNode);
         };
-        SpectrumWaterfall.prototype.stop = function () {
+        WaterfallDisplay.prototype.stop = function () {
             this.entity.sound.stop();
         };
-        SpectrumWaterfall.prototype.reset = function () {
+        WaterfallDisplay.prototype.reset = function () {
             var _a, _b;
             this.binCount = this.analyzerNode.frequencyBinCount;
             (_b = (_a = this.playbackInstance) === null || _a === void 0 ? void 0 : _a._connectorNode) === null || _b === void 0 ? void 0 : _b.connect(this.analyzerNode);
@@ -119,7 +119,7 @@
             this.calculateColors();
             this.createMeshInstance();
         };
-        SpectrumWaterfall.prototype.addWindow = function () {
+        WaterfallDisplay.prototype.addWindow = function () {
             this.analyzerNode.getFloatFrequencyData(this.fftWindowData);
             for (var i = 0; i < this.fftWindowData.length; i++) {
                 this.fftWindowData[i] =
@@ -143,7 +143,7 @@
                 this.vertices[i * 3 + 1] = Math.max(0, this.bins[i]);
             }
         };
-        SpectrumWaterfall.prototype.updateMesh = function (firstUpdate) {
+        WaterfallDisplay.prototype.updateMesh = function (firstUpdate) {
             if (firstUpdate === void 0) { firstUpdate = false; }
             this.mesh.setPositions(this.vertices);
             this.mesh.setColors(this.colors);
@@ -154,7 +154,7 @@
             }
             this.mesh.update(pc.PRIMITIVE_TRIANGLES);
         };
-        SpectrumWaterfall.prototype.createMeshInstance = function () {
+        WaterfallDisplay.prototype.createMeshInstance = function () {
             this.mesh = new pc.Mesh(this.app.graphicsDevice);
             this.mesh.clear(true, true);
             this.updateMesh(true);
@@ -168,7 +168,7 @@
             model.meshInstances = [this.meshInstance];
             this.entity.model.model = model;
         };
-        SpectrumWaterfall.prototype.calculateColors = function () {
+        WaterfallDisplay.prototype.calculateColors = function () {
             var wL = this.fftWindowData.length;
             for (var i = this.colors.length - 1 - wL * 4; i > 0; i--) {
                 this.colors[i + wL * 4] = this.colors[i];
@@ -190,7 +190,7 @@
                 }
             }
         };
-        SpectrumWaterfall.prototype.calculateExtents = function () {
+        WaterfallDisplay.prototype.calculateExtents = function () {
             var scaleX = this.scaleX / this.binCount;
             for (var z = 0; z < this.length; z++) {
                 for (var x = 0; x < this.binCount; x++) {
@@ -209,7 +209,7 @@
                 }
             }
         };
-        SpectrumWaterfall.prototype.calculateUvs = function () {
+        WaterfallDisplay.prototype.calculateUvs = function () {
             for (var z = 0; z < this.length; z++) {
                 for (var x = 0; x < this.binCount; x++) {
                     var i = x + z * this.binCount;
@@ -218,7 +218,7 @@
                 }
             }
         };
-        SpectrumWaterfall.prototype.calculateTriangles = function () {
+        WaterfallDisplay.prototype.calculateTriangles = function () {
             this.triangles = [];
             for (var x = 0; x < this.length - 1; x++) {
                 for (var y = 0; y < this.binCount - 1; y++) {
@@ -226,16 +226,16 @@
                 }
             }
         };
-        return SpectrumWaterfall;
+        return WaterfallDisplay;
     }(pc.ScriptType));
-    pc.registerScript(SpectrumWaterfall, "spectrumWaterfall");
-    SpectrumWaterfall.attributes.add("active", {
+    pc.registerScript(WaterfallDisplay, "waterfallDisplay");
+    WaterfallDisplay.attributes.add("active", {
         description: "Curently recording FFT windows.",
         title: "Active",
         default: true,
         type: "boolean",
     });
-    SpectrumWaterfall.attributes.add("fftSize", {
+    WaterfallDisplay.attributes.add("fftSize", {
         description: "The fftSize property of the AnalyserNode interface is an unsigned long value and represents the window size in samples that is used when performing a Fast Fourier Transform (FFT) to get frequency domain data.",
         title: "FFT Size",
         type: "number",
@@ -251,7 +251,7 @@
         ],
         default: 256,
     });
-    SpectrumWaterfall.attributes.add("smoothingTimeConstant", {
+    WaterfallDisplay.attributes.add("smoothingTimeConstant", {
         description: "The smoothingTimeConstant property of the AnalyserNode interface is a double value representing the averaging constant with the last analysis frame.",
         title: "Smoothing",
         type: "number",
@@ -259,7 +259,7 @@
         min: 0,
         max: 1,
     });
-    SpectrumWaterfall.attributes.add("scaleX", {
+    WaterfallDisplay.attributes.add("scaleX", {
         description: "Mesh X axis extent.",
         title: "Scale X",
         type: "number",
@@ -268,7 +268,7 @@
         max: 32,
         precision: 0.1,
     });
-    SpectrumWaterfall.attributes.add("amp", {
+    WaterfallDisplay.attributes.add("amp", {
         description: "Mesh Z axis extent.",
         title: "Amp",
         type: "number",
@@ -276,7 +276,7 @@
         min: 0.01,
         max: 4,
     });
-    SpectrumWaterfall.attributes.add("speed", {
+    WaterfallDisplay.attributes.add("speed", {
         description: "The rate of Z axis movement over time.",
         title: "Speed",
         type: "number",
@@ -284,7 +284,7 @@
         min: 0.001,
         max: 1,
     });
-    SpectrumWaterfall.attributes.add("gain", {
+    WaterfallDisplay.attributes.add("gain", {
         description: "Gain gain applid to visualization.",
         title: "Gain",
         type: "number",
@@ -292,7 +292,7 @@
         min: -48,
         max: 48,
     });
-    SpectrumWaterfall.attributes.add("length", {
+    WaterfallDisplay.attributes.add("length", {
         description: "The number of FFT windows stored from previous updates.",
         title: "Length",
         type: "number",
@@ -301,7 +301,7 @@
         max: 256,
         precision: 0.1,
     });
-    SpectrumWaterfall.attributes.add("fadeDecay", {
+    WaterfallDisplay.attributes.add("fadeDecay", {
         description: "Animate fade.",
         title: "Fade Decay",
         type: "number",
@@ -309,7 +309,7 @@
         min: 0.9,
         max: 1,
     });
-    SpectrumWaterfall.attributes.add("startOffset", {
+    WaterfallDisplay.attributes.add("startOffset", {
         description: "Amount of gain between start vertices and first fft window.",
         title: "Start Offset",
         type: "number",
@@ -317,30 +317,30 @@
         min: 0,
         max: 1,
     });
-    SpectrumWaterfall.attributes.add("colorMin", {
+    WaterfallDisplay.attributes.add("colorMin", {
         description: "Vertice color (min).",
         title: "Color Low",
         type: "rgba",
         default: [0, 255, 0, 1],
     });
-    SpectrumWaterfall.attributes.add("colorMax", {
+    WaterfallDisplay.attributes.add("colorMax", {
         description: "Vertice color (max).",
         title: "Color Min",
         type: "rgba",
         default: [255, 0, 0, 1],
     });
-    SpectrumWaterfall.attributes.add("cycleColors", {
+    WaterfallDisplay.attributes.add("cycleColors", {
         description: "Easter egg.",
         title: "Cycle Color",
         type: "boolean",
         default: true,
     });
-    SpectrumWaterfall.attributes.add("materialAsset", {
+    WaterfallDisplay.attributes.add("materialAsset", {
         description: "Material asset.",
         title: "Material",
         type: "asset",
     });
 
-    exports.SpectrumWaterfall = SpectrumWaterfall;
+    exports.SpectrumWaterfall = WaterfallDisplay;
 
 }(this.pc = this.pc || {}, pc));

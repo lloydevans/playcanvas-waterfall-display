@@ -12,7 +12,7 @@ let color = new pc.Color();
  * modifying 3D mesh vertices in realtime.
  *
  */
-export class SpectrumWaterfall extends pc.ScriptType {
+export class WaterfallDisplay extends pc.ScriptType {
   /**
    * Frequency bins per FFT window.
    */
@@ -377,28 +377,28 @@ export class SpectrumWaterfall extends pc.ScriptType {
 /**
  * Register class.
  */
-pc.registerScript(SpectrumWaterfall, "spectrumWaterfall");
+pc.registerScript(WaterfallDisplay, "waterfallDisplay");
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * Currently recording FFT windows.
    */
   active?: boolean;
 }
-SpectrumWaterfall.attributes.add("active", {
+WaterfallDisplay.attributes.add("active", {
   description: "Curently recording FFT windows.",
   title: "Active",
   default: true,
   type: "boolean",
 });
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * The fftSize property of the AnalyserNode interface is an unsigned long value and represents the window size in samples that is used when performing a Fast Fourier Transform (FFT) to get frequency domain data.
    */
   fftSize: 32 | 64 | 128 | 256 | 512 | 1024 | 2048 | 4096;
 }
-SpectrumWaterfall.attributes.add("fftSize", {
+WaterfallDisplay.attributes.add("fftSize", {
   description:
     "The fftSize property of the AnalyserNode interface is an unsigned long value and represents the window size in samples that is used when performing a Fast Fourier Transform (FFT) to get frequency domain data.",
   title: "FFT Size",
@@ -416,13 +416,13 @@ SpectrumWaterfall.attributes.add("fftSize", {
   default: 256,
 });
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * The smoothingTimeConstant property of the AnalyserNode interface is a double value representing the averaging constant with the last analysis frame.
    */
   smoothingTimeConstant?: number;
 }
-SpectrumWaterfall.attributes.add("smoothingTimeConstant", {
+WaterfallDisplay.attributes.add("smoothingTimeConstant", {
   description:
     "The smoothingTimeConstant property of the AnalyserNode interface is a double value representing the averaging constant with the last analysis frame.",
   title: "Smoothing",
@@ -432,13 +432,13 @@ SpectrumWaterfall.attributes.add("smoothingTimeConstant", {
   max: 1,
 });
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * Mesh X axis extent.
    */
   scaleX: number;
 }
-SpectrumWaterfall.attributes.add("scaleX", {
+WaterfallDisplay.attributes.add("scaleX", {
   description: "Mesh X axis extent.",
   title: "Scale X",
   type: "number",
@@ -448,13 +448,13 @@ SpectrumWaterfall.attributes.add("scaleX", {
   precision: 0.1,
 });
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * Mesh Z axis extent.
    */
   amp: number;
 }
-SpectrumWaterfall.attributes.add("amp", {
+WaterfallDisplay.attributes.add("amp", {
   description: "Mesh Z axis extent.",
   title: "Amp",
   type: "number",
@@ -463,13 +463,13 @@ SpectrumWaterfall.attributes.add("amp", {
   max: 4,
 });
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * The rate of Z axis movement over time.
    */
   speed: number;
 }
-SpectrumWaterfall.attributes.add("speed", {
+WaterfallDisplay.attributes.add("speed", {
   description: "The rate of Z axis movement over time.",
   title: "Speed",
   type: "number",
@@ -478,13 +478,13 @@ SpectrumWaterfall.attributes.add("speed", {
   max: 1,
 });
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * Gain applid to visualization.
    */
   gain: number;
 }
-SpectrumWaterfall.attributes.add("gain", {
+WaterfallDisplay.attributes.add("gain", {
   description: "Gain gain applid to visualization.",
   title: "Gain",
   type: "number",
@@ -493,13 +493,13 @@ SpectrumWaterfall.attributes.add("gain", {
   max: 48,
 });
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * The number of FFT windows stored from previous updates.
    */
   length: number;
 }
-SpectrumWaterfall.attributes.add("length", {
+WaterfallDisplay.attributes.add("length", {
   description: "The number of FFT windows stored from previous updates.",
   title: "Length",
   type: "number",
@@ -509,13 +509,13 @@ SpectrumWaterfall.attributes.add("length", {
   precision: 0.1,
 });
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * Animate fade.
    */
   fadeDecay: number;
 }
-SpectrumWaterfall.attributes.add("fadeDecay", {
+WaterfallDisplay.attributes.add("fadeDecay", {
   description: "Animate fade.",
   title: "Fade Decay",
   type: "number",
@@ -524,13 +524,13 @@ SpectrumWaterfall.attributes.add("fadeDecay", {
   max: 1,
 });
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * Amount of gain between start vertices and first fft window.
    */
   startOffset: number;
 }
-SpectrumWaterfall.attributes.add("startOffset", {
+WaterfallDisplay.attributes.add("startOffset", {
   description: "Amount of gain between start vertices and first fft window.",
   title: "Start Offset",
   type: "number",
@@ -539,52 +539,52 @@ SpectrumWaterfall.attributes.add("startOffset", {
   max: 1,
 });
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * Vertice color lerp value A.
    */
   colorMin?: pc.Color;
 }
-SpectrumWaterfall.attributes.add("colorMin", {
+WaterfallDisplay.attributes.add("colorMin", {
   description: "Vertice color (min).",
   title: "Color Low",
   type: "rgba",
   default: [0, 255, 0, 1],
 });
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * Vertice color lerp value B.
    */
   colorMax?: pc.Color;
 }
-SpectrumWaterfall.attributes.add("colorMax", {
+WaterfallDisplay.attributes.add("colorMax", {
   description: "Vertice color (max).",
   title: "Color Min",
   type: "rgba",
   default: [255, 0, 0, 1],
 });
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * Easter egg.
    */
   cycleColors: boolean;
 }
-SpectrumWaterfall.attributes.add("cycleColors", {
+WaterfallDisplay.attributes.add("cycleColors", {
   description: "Easter egg.",
   title: "Cycle Color",
   type: "boolean",
   default: true,
 });
 
-export interface SpectrumWaterfall {
+export interface WaterfallDisplay {
   /**
    * Material.
    */
   materialAsset?: pc.Asset;
 }
-SpectrumWaterfall.attributes.add("materialAsset", {
+WaterfallDisplay.attributes.add("materialAsset", {
   description: "Material asset.",
   title: "Material",
   type: "asset",
