@@ -36,9 +36,12 @@
         var mR = cos + (1 - cos) / 3;
         var mG = (1 - cos) / 3 - Math.sqrt(1 / 3) * sin;
         var mB = (1 - cos) / 3 + Math.sqrt(1 / 3) * sin;
-        color.r = color.r * mR + color.g * mG + color.b * mB;
-        color.g = color.r * mB + color.g * mR + color.b * mG;
-        color.b = color.r * mG + color.g * mB + color.b * mR;
+        var r = color.r * mR + color.g * mG + color.b * mB;
+        var g = color.r * mB + color.g * mR + color.b * mG;
+        var b = color.r * mG + color.g * mB + color.b * mR;
+        color.r = r;
+        color.g = g;
+        color.b = b;
     }
 
     var NOISE_FLOOR = 148;

@@ -10,7 +10,10 @@ export function rotateHue(color: pc.Color, amount: number) {
   let mR = cos + (1 - cos) / 3;
   let mG = (1 - cos) / 3 - Math.sqrt(1 / 3) * sin;
   let mB = (1 - cos) / 3 + Math.sqrt(1 / 3) * sin;
-  color.r = color.r * mR + color.g * mG + color.b * mB;
-  color.g = color.r * mB + color.g * mR + color.b * mG;
-  color.b = color.r * mG + color.g * mB + color.b * mR;
+  let r = color.r * mR + color.g * mG + color.b * mB;
+  let g = color.r * mB + color.g * mR + color.b * mG;
+  let b = color.r * mG + color.g * mB + color.b * mR;
+  color.r = r;
+  color.g = g;
+  color.b = b;
 }
