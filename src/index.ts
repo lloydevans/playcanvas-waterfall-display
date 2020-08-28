@@ -1,1 +1,1 @@
-export { WaterfallDisplay as SpectrumWaterfall } from "./spectrum-waterfall";
+export { WaterfallDisplay } from "./waterfall-display";

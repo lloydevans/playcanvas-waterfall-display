@@ -341,6 +341,6 @@
         type: "asset",
     });
 
-    exports.SpectrumWaterfall = WaterfallDisplay;
+    exports.WaterfallDisplay = WaterfallDisplay;
 
 }(this.pc = this.pc || {}, pc));
