@@ -334,8 +334,7 @@ export class SpectrumWaterfall extends pc.ScriptType {
         } //
         else {
           let referenceSpeed = 256 / this.analyzerNode.frequencyBinCount;
-          this.vertices[3 * i + 2] =
-            this.startOffset * 2 + z * this.speed * referenceSpeed;
+          this.vertices[3 * i + 2] = z * this.speed * referenceSpeed;
         }
       }
     }
