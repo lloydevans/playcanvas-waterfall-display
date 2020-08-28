@@ -549,7 +549,7 @@ WaterfallDisplay.attributes.add("colorMin", {
   description: "Vertice color (min).",
   title: "Color Low",
   type: "rgba",
-  default: [0, 255, 0, 1],
+  default: [0, 1, 0, 1],
 });
 
 export interface WaterfallDisplay {
@@ -562,7 +562,7 @@ WaterfallDisplay.attributes.add("colorMax", {
   description: "Vertice color (max).",
   title: "Color Min",
   type: "rgba",
-  default: [255, 0, 0, 1],
+  default: [1, 0, 0, 1],
 });
 
 export interface WaterfallDisplay {
