@@ -473,7 +473,7 @@ WaterfallDisplay.attributes.add("speed", {
   description: "The rate of Z axis movement over time.",
   title: "Speed",
   type: "number",
-  default: 1,
+  default: 0.5,
   min: 0.001,
   max: 1,
 });
