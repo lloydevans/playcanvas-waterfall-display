@@ -575,7 +575,7 @@ WaterfallDisplay.attributes.add("cycleColors", {
   description: "Easter egg.",
   title: "Cycle Color",
   type: "boolean",
-  default: true,
+  default: false,
 });
 
 export interface WaterfallDisplay {

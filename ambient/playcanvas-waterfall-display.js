@@ -336,7 +336,7 @@
         description: "Easter egg.",
         title: "Cycle Color",
         type: "boolean",
-        default: true,
+        default: false,
     });
     WaterfallDisplay.attributes.add("materialAsset", {
         description: "Material asset.",
