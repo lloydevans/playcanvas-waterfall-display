@@ -8,7 +8,7 @@ See a live demo [here](https://playcanv.as/p/eXaRm9xJ/).
 
 ## Setup
 
-If you'd like to use it in a project, you can see it's usage in the example project [here](https://playcanvas.com/project/714880/overview/spectrum-waterfall).
+If you'd like to use it in a project, you can see its usage in the example project [here](https://playcanvas.com/project/714880/overview/spectrum-waterfall).
 
 Dropping the file `ambient/playcanvas-waterfall-display.js` into the project will make the component available.
 
