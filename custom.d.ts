@@ -9,6 +9,6 @@ declare namespace pc {
   }
 
   interface ScriptComponent {
-    spectrumWaterfall?: import("./src/waterfall-display").WaterfallDisplay;
+    waterfallDisplay?: import("./src/waterfall-display").WaterfallDisplay;
   }
 }
