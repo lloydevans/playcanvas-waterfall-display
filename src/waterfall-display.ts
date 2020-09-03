@@ -29,11 +29,6 @@ export class WaterfallDisplay extends pc.ScriptType {
   protected vertices: Float32Array;
 
   /**
-   * Mesh instance.
-   */
-  protected mesh: pc.Mesh;
-
-  /**
    * UVs vertice index array.
    */
   protected uvs: Float32Array;
@@ -59,7 +54,12 @@ export class WaterfallDisplay extends pc.ScriptType {
   protected material: pc.Material = new pc.StandardMaterial();
 
   /**
-   * Pc mesh instance reference.
+   * Mesh.
+   */
+  protected mesh: pc.Mesh;
+
+  /**
+   * Mesh instance reference.
    */
   protected meshInstance: pc.MeshInstance;
 
@@ -84,28 +84,32 @@ export class WaterfallDisplay extends pc.ScriptType {
   protected ctx: AudioContext;
 
   /**
+   * TODO: optimize normal calculations.
+   */
+  protected normals: Float32Array[];
+
+  /**
+   * Reused vector object for calculating new bin positions.
+   */
+  protected binVector: pc.Vec3 = new pc.Vec3();
+
+  /**
+   * Reused quaternion object for calculating new bin positions.
+   */
+  protected quat: pc.Quat = new pc.Quat();
+
+  /**
    * Called when script is about to run for the first time.
    */
   public initialize() {
     this.on("attr:fftSize", () => {
       this.analyzerNode.fftSize = this.fftSize;
+      this.binCount = this.analyzerNode.frequencyBinCount;
       this.reset();
     });
 
     this.on("attr:smoothingTimeConstant", () => {
       this.analyzerNode.smoothingTimeConstant = this.smoothingTimeConstant;
-    });
-
-    this.on("attr:scaleX", () => {
-      this.calculateExtents();
-    });
-
-    this.on("attr:speed", () => {
-      this.calculateExtents();
-    });
-
-    this.on("attr:startOffset", () => {
-      this.calculateExtents();
     });
 
     this.on("attr:length", () => {
@@ -139,7 +143,21 @@ export class WaterfallDisplay extends pc.ScriptType {
 
     if (this.active) {
       this.addWindow();
-      this.calculateColors();
+
+      // Simple fade decay effect.
+      if (this.fadeDecay !== 1) {
+        for (let i = 0; i < this.colors.length / 4; i++) {
+          this.colors[i * 4 + 3] *= this.fadeDecay;
+        }
+      }
+
+      // Add fixed velocity.
+      for (let i = this.binCount; i < this.vertices.length / 3; i++) {
+        this.vertices[3 * i + 0] += this.velocity.x;
+        this.vertices[3 * i + 1] += this.velocity.y;
+        this.vertices[3 * i + 2] += this.velocity.z;
+      }
+
       this.updateMesh();
     }
   }
@@ -159,7 +177,7 @@ export class WaterfallDisplay extends pc.ScriptType {
     this.playbackInstance = this.entity.sound.play(slotName);
 
     // @ts-expect-error // Get access to audio node via provate property.
-    this.playbackInstance._connectorNode.connect(this.analyzerNode);
+    this.playbackInstance?._connectorNode?.connect(this.analyzerNode);
   }
 
   /**
@@ -183,11 +201,9 @@ export class WaterfallDisplay extends pc.ScriptType {
     this.bins = new Float32Array(area);
     this.vertices = new Float32Array(3 * area);
     this.uvs = new Float32Array(2 * area);
-    this.colors = new Float32Array(4 * area);
-    this.calculateExtents();
+    this.colors = new Float32Array(4 * area).fill(1, 0, 4 * area);
     this.calculateTriangles();
     this.calculateUvs();
-    this.calculateColors();
     this.createMeshInstance();
   }
 
@@ -197,38 +213,70 @@ export class WaterfallDisplay extends pc.ScriptType {
   private addWindow() {
     this.analyzerNode.getFloatFrequencyData(this.fftWindowData);
 
+    let len = this.fftWindowData.length;
+
     for (let i = 0; i < this.fftWindowData.length; i++) {
-      this.fftWindowData[i] =
-        (this.fftWindowData[i] + NOISE_FLOOR + this.gain) / NOISE_FLOOR;
+      this.fftWindowData[i] = (this.fftWindowData[i] + NOISE_FLOOR + this.gain) / NOISE_FLOOR;
       this.fftWindowData[i] *= this.amp;
     }
 
-    let len = this.fftWindowData.length;
-
-    // Shift the whole bins array forard.
-    for (let i = this.bins.length - 1 - len; i > 0; i--) {
+    // Shift arrays.
+    for (let i = this.bins.length - 1 - len; i >= 0; i--) {
       this.bins[i + len] = this.bins[i];
     }
+    for (let i = this.colors.length - 1 - len * 4; i >= 0; i--) {
+      this.colors[i + len * 4] = this.colors[i];
+    }
+    for (let i = this.vertices.length - 1 - len * 3; i >= 0; i--) {
+      this.vertices[i + len * 3] = this.vertices[i];
+    }
 
-    // Add in the new window.
+    // Add new bins.
     for (let i = 0; i < len; i++) {
       this.bins[i] = this.fftWindowData[i];
     }
 
-    for (
-      let i = this.vertices.length / 3 - len;
-      i < this.vertices.length / 3;
-      i++
-    ) {
-      this.vertices[i * 3 + 1] = 0;
-    }
-
+    // Add new colors.
     for (let i = 0; i < len; i++) {
-      this.vertices[i * 3 + 1] = 0;
+      color.set(0, 0, 0, 0);
+
+      switch (this.colorMode) {
+        case "amp":
+          color.lerp(
+            this.colorMin,
+            this.colorMax,
+            Math.max(0, Math.min(1, this.fftWindowData[i] / this.amp)),
+          );
+          break;
+
+        case "freq":
+          color.lerp(this.colorMin, this.colorMax, Math.max(0, i / len));
+          break;
+      }
+
+      this.colors[i * 4 + 0] = color.r;
+      this.colors[i * 4 + 1] = color.g;
+      this.colors[i * 4 + 2] = color.b;
+      this.colors[i * 4 + 3] = color.a;
     }
 
-    for (let i = len; i < this.vertices.length / 3 - len; i++) {
-      this.vertices[i * 3 + 1] = Math.max(0, this.bins[i]);
+    // Add new vertices.
+    for (let i = 0; i < len; i++) {
+      let scale = this.width / len;
+
+      // Calculated unrotated position.
+      this.binVector.x = i * scale - this.width / 2;
+      this.binVector.y = Math.max(0, this.fftWindowData[i]);
+      this.binVector.z = 0;
+
+      // Rotate by rotation attribute.
+      this.quat.setFromEulerAngles(this.rotation.x, this.rotation.y, this.rotation.z);
+      this.quat.transformVector(this.binVector, this.binVector);
+
+      // Update vertices.
+      this.vertices[i * 3 + 0] = this.binVector.x + this.position.x;
+      this.vertices[i * 3 + 1] = this.binVector.y + this.position.y;
+      this.vertices[i * 3 + 2] = this.binVector.z + this.position.z;
     }
   }
 
@@ -239,7 +287,10 @@ export class WaterfallDisplay extends pc.ScriptType {
    */
   private updateMesh(firstUpdate = false) {
     this.mesh.setPositions(this.vertices);
+
     this.mesh.setColors(this.colors);
+
+    this.calculateTriangles();
 
     // @ts-ignore // Type only allows number[] but can take Float32Array.
     this.mesh.setNormals(pc.calculateNormals(this.vertices, this.triangles));
@@ -258,13 +309,13 @@ export class WaterfallDisplay extends pc.ScriptType {
   protected createMeshInstance() {
     this.mesh = new pc.Mesh(this.app.graphicsDevice);
     this.mesh.clear(true, true);
+
     this.updateMesh(true);
+
     this.graphNode = new pc.GraphNode();
-    this.meshInstance = new pc.MeshInstance(
-      this.graphNode,
-      this.mesh,
-      this.material
-    );
+
+    this.meshInstance = new pc.MeshInstance(this.graphNode, this.mesh, this.material);
+    this.meshInstance.renderStyle = pc.RENDERSTYLE_SOLID;
 
     if (!this.entity.model) {
       this.entity.addComponent("model");
@@ -274,70 +325,6 @@ export class WaterfallDisplay extends pc.ScriptType {
     model.graph = this.graphNode;
     model.meshInstances = [this.meshInstance];
     this.entity.model.model = model;
-  }
-
-  /**
-   * Calculate vertex colors by interpolating between the min and max colors.
-   */
-  protected calculateColors() {
-    let wL = this.fftWindowData.length;
-
-    for (let i = this.colors.length - 1 - wL * 4; i > 0; i--) {
-      this.colors[i + wL * 4] = this.colors[i];
-    }
-
-    for (let i = 0; i < wL; i++) {
-      color.set(0, 0, 0, 0);
-      color.lerp(
-        this.colorMin,
-        this.colorMax,
-        Math.max(0, Math.min(1, this.bins[i] / this.amp))
-      );
-
-      this.colors[i * 4 + 0] = color.r;
-      this.colors[i * 4 + 1] = color.g;
-      this.colors[i * 4 + 2] = color.b;
-
-      // Force left and right most to be transparent.
-      this.colors[i * 4 + 3] = i === 0 || i === this.binCount - 1 ? 0 : color.a;
-    }
-
-    if (this.fadeDecay !== 1) {
-      for (let x = 0; x < this.binCount; x++) {
-        for (let y = 0; y < this.length; y++) {
-          let i = x + y * this.binCount;
-          this.colors[i * 4 + 3] *= this.fadeDecay;
-        }
-      }
-    }
-  }
-
-  /**
-   * Calculate all mesh geometry appart from Y axis height.
-   */
-  protected calculateExtents() {
-    let scaleX = this.scaleX / this.binCount;
-
-    for (let z = 0; z < this.length; z++) {
-      for (let x = 0; x < this.binCount; x++) {
-        let i = x + z * this.binCount;
-
-        // Frequency / X
-        this.vertices[3 * i] = (-x + this.binCount / 2) * scaleX;
-
-        // Depth / Time
-        if (z === 0) {
-          this.vertices[3 * i + 2] = 0;
-        } //
-        else if (z === 1) {
-          this.vertices[3 * i + 2] = this.startOffset * 2;
-        } //
-        else {
-          let referenceSpeed = 256 / this.analyzerNode.frequencyBinCount;
-          this.vertices[3 * i + 2] = z * this.speed * referenceSpeed;
-        }
-      }
-    }
   }
 
   /**
@@ -359,15 +346,15 @@ export class WaterfallDisplay extends pc.ScriptType {
   protected calculateTriangles() {
     this.triangles = [];
 
-    for (let x = 0; x < this.length - 1; x++) {
-      for (let y = 0; y < this.binCount - 1; y++) {
+    for (let x = 0; x < this.binCount - 1; x++) {
+      for (let y = 0; y < this.length - 1; y++) {
         this.triangles.push(
-          x * this.binCount + y + 1,
-          (x + 1) * this.binCount + y,
-          x * this.binCount + y,
-          (x + 1) * this.binCount + y,
-          x * this.binCount + y + 1,
-          (x + 1) * this.binCount + y + 1
+          x + 1 + y * this.binCount,
+          x + (y + 1) * this.binCount,
+          x + y * this.binCount,
+          x + (y + 1) * this.binCount,
+          x + 1 + y * this.binCount,
+          x + 1 + (y + 1) * this.binCount,
         );
       }
     }
@@ -418,9 +405,48 @@ WaterfallDisplay.attributes.add("fftSize", {
 
 export interface WaterfallDisplay {
   /**
+   * Offset the point vectors are generated from.
+   */
+  position: pc.Vec3;
+}
+WaterfallDisplay.attributes.add("position", {
+  description: "Spawn point for new windows.",
+  title: "Position",
+  type: "vec3",
+  default: [0, 0, 0],
+});
+
+export interface WaterfallDisplay {
+  /**
+   * Spawn rotation.
+   */
+  rotation: pc.Vec3;
+}
+WaterfallDisplay.attributes.add("rotation", {
+  description: "Spawn rotation.",
+  title: "Rotation",
+  type: "vec3",
+  default: [0, 0, 0],
+});
+
+export interface WaterfallDisplay {
+  /**
+   * Static velocity.
+   */
+  velocity: pc.Vec3;
+}
+WaterfallDisplay.attributes.add("velocity", {
+  description: "Static velocity.",
+  title: "Velocity",
+  type: "vec3",
+  default: [0, 0, 0],
+});
+
+export interface WaterfallDisplay {
+  /**
    * The smoothingTimeConstant property of the AnalyserNode interface is a double value representing the averaging constant with the last analysis frame.
    */
-  smoothingTimeConstant?: number;
+  smoothingTimeConstant: number;
 }
 WaterfallDisplay.attributes.add("smoothingTimeConstant", {
   description:
@@ -434,18 +460,17 @@ WaterfallDisplay.attributes.add("smoothingTimeConstant", {
 
 export interface WaterfallDisplay {
   /**
-   * Mesh X axis extent.
+   * Trail width extent.
    */
-  scaleX: number;
+  width: number;
 }
-WaterfallDisplay.attributes.add("scaleX", {
-  description: "Mesh X axis extent.",
-  title: "Scale X",
+WaterfallDisplay.attributes.add("width", {
+  description: "Trail width extent.",
+  title: "Width",
   type: "number",
-  default: 16,
-  min: 1,
-  max: 32,
-  precision: 0.1,
+  default: 1,
+  min: 0,
+  max: 64,
 });
 
 export interface WaterfallDisplay {
@@ -460,7 +485,7 @@ WaterfallDisplay.attributes.add("amp", {
   type: "number",
   default: 1,
   min: 0.01,
-  max: 4,
+  max: 10,
 });
 
 export interface WaterfallDisplay {
@@ -504,7 +529,7 @@ WaterfallDisplay.attributes.add("length", {
   title: "Length",
   type: "number",
   default: 128,
-  min: 4,
+  min: 1,
   max: 256,
   precision: 0.1,
 });
@@ -526,43 +551,28 @@ WaterfallDisplay.attributes.add("fadeDecay", {
 
 export interface WaterfallDisplay {
   /**
-   * Amount of gain between start vertices and first fft window.
+   * Vertice color lerp value B.
    */
-  startOffset: number;
+  colorMax: pc.Color;
 }
-WaterfallDisplay.attributes.add("startOffset", {
-  description: "Amount of gain between start vertices and first fft window.",
-  title: "Start Offset",
-  type: "number",
-  default: 0.5,
-  min: 0,
-  max: 1,
+WaterfallDisplay.attributes.add("colorMax", {
+  description: "Vertice color (max).",
+  title: "Color Max",
+  type: "rgba",
+  default: [1, 0, 0, 1],
 });
 
 export interface WaterfallDisplay {
   /**
    * Vertice color lerp value A.
    */
-  colorMin?: pc.Color;
+  colorMin: pc.Color;
 }
 WaterfallDisplay.attributes.add("colorMin", {
   description: "Vertice color (min).",
-  title: "Color Low",
-  type: "rgba",
-  default: [0, 1, 0, 1],
-});
-
-export interface WaterfallDisplay {
-  /**
-   * Vertice color lerp value B.
-   */
-  colorMax?: pc.Color;
-}
-WaterfallDisplay.attributes.add("colorMax", {
-  description: "Vertice color (max).",
   title: "Color Min",
   type: "rgba",
-  default: [1, 0, 0, 1],
+  default: [0, 1, 0, 1],
 });
 
 export interface WaterfallDisplay {
@@ -576,6 +586,20 @@ WaterfallDisplay.attributes.add("cycleColors", {
   title: "Cycle Color",
   type: "boolean",
   default: false,
+});
+
+export interface WaterfallDisplay {
+  /**
+   *
+   */
+  colorMode: "amp" | "freq";
+}
+WaterfallDisplay.attributes.add("colorMode", {
+  description: "",
+  title: "Color Mode",
+  type: "string",
+  enum: [{ Amp: "amp" }, { Frequency: "freq" }],
+  default: "amp",
 });
 
 export interface WaterfallDisplay {
