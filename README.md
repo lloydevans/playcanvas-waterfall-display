@@ -1,6 +1,6 @@
 # playcanvas-waterfall-display
 
-![alt text](https://i.ibb.co/TrzkZCj/candy-bar-preview.jpg "Preview")
+![alt text](https://i.ibb.co/QkLbBs2/rnbowroadpreviewbanner.jpg "Preview")
 
 A spectrogram waterfall rendered as a 3D mesh using Play Canvas and the Web Audio API.
 
