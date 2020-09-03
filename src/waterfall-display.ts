@@ -202,8 +202,8 @@ export class WaterfallDisplay extends pc.ScriptType {
     this.vertices = new Float32Array(3 * area);
     this.uvs = new Float32Array(2 * area);
     this.colors = new Float32Array(4 * area).fill(1, 0, 4 * area);
-    this.calculateTriangles();
     this.calculateUvs();
+    this.calculateTriangles();
     this.createMeshInstance();
   }
 
@@ -289,8 +289,6 @@ export class WaterfallDisplay extends pc.ScriptType {
     this.mesh.setPositions(this.vertices);
 
     this.mesh.setColors(this.colors);
-
-    this.calculateTriangles();
 
     // @ts-ignore // Type only allows number[] but can take Float32Array.
     this.mesh.setNormals(pc.calculateNormals(this.vertices, this.triangles));

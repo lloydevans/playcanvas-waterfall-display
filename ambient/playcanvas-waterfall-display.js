@@ -120,8 +120,8 @@
             this.vertices = new Float32Array(3 * area);
             this.uvs = new Float32Array(2 * area);
             this.colors = new Float32Array(4 * area).fill(1, 0, 4 * area);
-            this.calculateTriangles();
             this.calculateUvs();
+            this.calculateTriangles();
             this.createMeshInstance();
         };
         WaterfallDisplay.prototype.addWindow = function () {
@@ -174,7 +174,6 @@
             if (firstUpdate === void 0) { firstUpdate = false; }
             this.mesh.setPositions(this.vertices);
             this.mesh.setColors(this.colors);
-            this.calculateTriangles();
             this.mesh.setNormals(pc.calculateNormals(this.vertices, this.triangles));
             if (firstUpdate) {
                 this.mesh.setUvs(0, this.uvs);
