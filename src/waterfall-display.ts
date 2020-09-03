@@ -260,6 +260,9 @@ export class WaterfallDisplay extends pc.ScriptType {
       this.colors[i * 4 + 3] = color.a;
     }
 
+    // Update rotation quaternion.
+    this.quat.setFromEulerAngles(this.rotation.x, this.rotation.y, this.rotation.z);
+
     // Add new vertices.
     for (let i = 0; i < len; i++) {
       let scale = this.width / len;
@@ -270,7 +273,6 @@ export class WaterfallDisplay extends pc.ScriptType {
       this.binVector.z = 0;
 
       // Rotate by rotation attribute.
-      this.quat.setFromEulerAngles(this.rotation.x, this.rotation.y, this.rotation.z);
       this.quat.transformVector(this.binVector, this.binVector);
 
       // Update vertices.

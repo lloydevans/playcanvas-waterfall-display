@@ -158,12 +158,12 @@
                 this.colors[i * 4 + 2] = color.b;
                 this.colors[i * 4 + 3] = color.a;
             }
+            this.quat.setFromEulerAngles(this.rotation.x, this.rotation.y, this.rotation.z);
             for (var i = 0; i < len; i++) {
                 var scale = this.width / len;
                 this.binVector.x = i * scale - this.width / 2;
                 this.binVector.y = Math.max(0, this.fftWindowData[i]);
                 this.binVector.z = 0;
-                this.quat.setFromEulerAngles(this.rotation.x, this.rotation.y, this.rotation.z);
                 this.quat.transformVector(this.binVector, this.binVector);
                 this.vertices[i * 3 + 0] = this.binVector.x + this.position.x;
                 this.vertices[i * 3 + 1] = this.binVector.y + this.position.y;
